@@ -8,13 +8,19 @@ token_endpoint = "https://id.twitch.tv/oauth2/token"
 
 
 def get_streams(
-    client: OAuth2Client, after: str = "", language: str = "en", limit: int = 20
+    client: OAuth2Client, language: str = None, limit: int = 20, after: str = None
 ) -> httpx.Response:
     url = "https://api.twitch.tv/helix/streams"
     headers = {"Client-Id": os.getenv("client_id")}
-    params = {"language": language, "first": limit, "after": after}
-    response = client.get(url, params=params, headers=headers)
 
+    params = {}
+    if language is not None:
+        params["language"] = language
+    if after is not None:
+        params["after"] = after
+    params["first"] = limit
+
+    response = client.get(url, params=params, headers=headers)
     return response
 
 
@@ -25,5 +31,12 @@ client = OAuth2Client(
 )
 client.fetch_token(token_endpoint)
 
-streams = get_streams(client, limit=100).json()["data"]
-print(streams)
+# Get top 100 streams
+response = get_streams(client, language="en", limit=100)
+streams = response.json()["data"]
+
+# Merge with already tracked streams
+
+# For all tracked streams that are online, get viewers
+
+# Save viewers to db
